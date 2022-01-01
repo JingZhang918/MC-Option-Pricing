@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html >
+<!--From https://codepen.io/frytyler/pen/EGdtg-->
+<head>
+  <meta charset="UTF-8">
+  <title>ML API</title>
+  <link href='https://fonts.googleapis.com/css?family=Pacifico' rel='stylesheet' type='text/css'>
+<link href='https://fonts.googleapis.com/css?family=Arimo' rel='stylesheet' type='text/css'>
+<link href='https://fonts.googleapis.com/css?family=Hind:300' rel='stylesheet' type='text/css'>
+<link href='https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  
+</head>
+
+<body>
+ <div class="login">
+	<h1>Option Pricing Engine</h1>
+
+     <!-- Main Input For Receiving Query to our model -->
+    <form action="{{ url_for('predict')}}"method="post">
+    	<label> Ticker </label> <input type="text" name="Ticker" placeholder="AAPL" required="required" />
+        <label> Expiration Date </label> <input type="text" name="Expiration Date" placeholder="January 7, 2022" required="required" />
+		<label> Option Class </label> <input type="text" name="Option Class" placeholder="european" required="required" />
+        <label> Option Type </label> <input type="text" name="Option Type" placeholder="call" required="required" />
+        <label> Risk Free Rate </label> <input type="text" name="Risk Free Rate" placeholder=".01" required="required" />
+        <label> Volatility </label> <input type="text" name="Volatility" placeholder=".03" required="required" />
+        <label> Drift </label> <input type="text" name="Drift" placeholder=".01" required="required" />
+        <label> Continuous Yield </label> <input type="text" name="Continuous Yield" placeholder="0" required="required" />
+        <label> MC Simulation </label> <input type="text" name="MC_simulation" placeholder="100" required="required" />
+
+        <button type="submit" class="btn btn-primary btn-block btn-large">Price Option</button>
+    </form>
+
+   <br>
+   <br>
+   {{ prediction_text }}
+
+ </div>
+
+
+</body>
+</html>
+
+
+<!--    ticker = "AAPL"-->
+<!--    expiration_date = "January 7, 2022" # January 7, 2022 or 01/07/2022 or 01/07/22-->
+<!--    option_class = "european"           # european option / barrier option-->
+<!--    option_type = "call"                # call or put-->
+<!--    if option_class == "barrier":-->
+<!--        barrier_type = "upin"           # up&in / up&out / down&in/ down&out-->
+<!--    risk_free_rate = .01-->
+<!--    volatility = .03-->
+<!--    drift = .1-->
+<!--    continuous_yield = 0-->

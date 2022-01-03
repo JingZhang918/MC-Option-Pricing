@@ -20,6 +20,7 @@ def price_option():
     continuous_yield = float(continuous_yield_var.get())
     MC_simulation = int(MC_simulation_var.get())
 
+
     # start with one option
     if option_type == "call":
         option_lists = options.get_calls(ticker, expiration_date)
@@ -42,57 +43,37 @@ def price_option():
         optionEU.r = risk_free_rate
         optionEU.q = continuous_yield
         optionEU.type = option_type
-        optionEU.get_d1_d2()
 
         # calculate Greeks and prices under BSM and MC
-        BSM_price = optionEU.BSPricer()
-        Delta = optionEU.get_delta()
-        Gamma = optionEU.get_gamma()
-        Vega = optionEU.get_vega()
-        MC_price = MCPricer(optionEU, drift, MC_simulation).get_price()
+        # [price_bs, delta_bs, gamma_bs, vega_bs] = optionEU.get_BS_price_greeks()
+        [price_mc, delta_mc, gamma_mc, vega_mc] = MCPricer(optionEU, drift, MC_simulation).get_price_greeks()
 
-        # print(f"under the input assumptions, the black-scholes-merton price is {BSM_price},\n"
-        #       f"delta is {Delta},\n"
-        #       f"gamma is {Gamma},\n"
-        #       f"Vega is {Vega},\n"
-        #       f"Monte Carlo Simulation price is {MC_price}")
-
-    elif option_class == "barrier":
-        pass
-        # optionBA = barrierOption(barrier, barrier_type)
-        # # initialize parameters
-        # optionBA.barrier = barrier
-        # optionBA.barrier_type = barrier_type
-        # optionBA.S = underlying_price
-        # optionBA.sigma = volatility
-        # optionBA.K = strike_price
-        # optionBA.T = time_to_expiration
-        # optionBA.r = risk_free_rate
-        # optionBA.q = continuous_yield
-        # optionBA.type = option_type
-        # optionBA.get_d1_d2()
-        #
-        # Delta = optionBA.get_delta()
-        # Gamma = optionBA.get_gamma()
-        # Vega = optionBA.get_vega()
-        # MC_price = MCPricer(optionBA, drift, 100).get_price()
-        #
-        # # output
-        # print(f"under the input assumptions,\n"
-        #       f"delta is {Delta},\n"
-        #       f"gamma is {Gamma},\n"
-        #       f"Vega is {Vega},\n"
-        #       f"Monte Carlo Simulation price is {MC_price}")
-
-    elif option_class == "american":
-        pass
+    # elif option_class == "barrier":
+    #     optionBA = barrierOption(barrier, barrier_type)
+    #     # initialize parameters
+    #     optionBA.barrier = barrier
+    #     optionBA.barrier_type = barrier_type
+    #     optionBA.S = underlying_price
+    #     optionBA.sigma = volatility
+    #     optionBA.K = strike_price
+    #     optionBA.T = time_to_expiration
+    #     optionBA.r = risk_free_rate
+    #     optionBA.q = continuous_yield
+    #     optionBA.type = option_type
+    #
+    #     [price_mc, delta_mc, gamma_mc, vega_mc] = MCPricer(optionBA, drift, MC_simulation).get_price_greeks()
+    #
+    #     print(f"under the input assumptions, \n"
+    #           f"the MC simulation price is {price_mc},\n"
+    #           f"delta is {delta_mc},\n"
+    #           f"gamma is {gamma_mc},\n"
+    #           f"Vega is {vega_mc},\n")
 
     prediction_text = f"under the input assumptions, \n" + \
-                      f"the black-scholes-merton price is {round(BSM_price, 2)},\n" + \
-                      f"delta is {round(Delta, 2)},\n" + \
-                      f"gamma is {round(Gamma, 2)},\n" + \
-                      f"Vega is {round(Vega, 2)},\n" + \
-                      f"Monte Carlo Simulation price is {round(MC_price, 2)} \n\n"
+                      f"the MC simulation price is {round(price_mc,3)},\n" +\
+                      f"delta is {round(delta_mc, 3)},\n" + \
+                      f"gamma is {round(gamma_mc, 3)},\n" + \
+                      f"Vega is {round(vega_mc, 3)},\n"
 
 
     Output.insert(END, prediction_text)

@@ -21,6 +21,7 @@
         <li><a href="#Shortcomings and future improvements">Shortcomings and Future Improvements</a></li>
       </ul>
     <li><a href="#Guide on adding more options">Guide on adding more options</a></li>
+    <li><a href="#Future Application">Future Application !!!!</a></li>
     <li><a href="#contact">Contact</a></li>
   </ol>
 </details>
@@ -31,7 +32,7 @@
 This project is used for pricing options through **Monte Carlo Simulation**. Current 
 supported option types are **European option** and **Barrier option**. 
 
-Two applications are provided: web app and exe app. Currently, both user interface only accepts
+Two applications are provided: web app and exe app. Currently, both user interfaces only accepts
 European option. 
 
 The following are web app GUI and exe app GUI respectively.
@@ -40,27 +41,41 @@ The following are web app GUI and exe app GUI respectively.
 
 <img src="./images/exe_app.png" alt="Exe App GUI" width="50%" height="50%"/>
 
-
-
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 <!-- Set up environment -->
 ## Set up environment
-There is no need to set up environment for Exe App. 
 
-To set up environment for Web App, you can run
-the following code in your terminal.
-```commandline
+To set up environment for both apps, you can run the following code in your terminal.
+```
 # create environment
 conda create -n ope python=3.9
 conda activate ope
+
 # install necessary packages (dependencies)
-pip install flask yfinance yahoo_fin
-# run app.py
-python app.py
+pip install flask yfinance yahoo_fin scipy
+# conda install -c conda-forge scipy -y # for apple M1 user
+
+## To use Web APP
+python app.py 
 # open http://127.0.0.1:5000/ in your browser
+
+## To use EXE APP
+python gui.py
 ```
 Note: the web app is not responsive, please report bug if something abnormal happened.
+
+You can also convert .py file into .exe file by:
+```
+pip install auto-py-to-exe
+auto-py-to-exe
+```
+with the following configuration:
+
+<img src="./images/auto_py_to_exe.png" alt="Auto py to Exe configuration" width="50%" height="50%"/>
+
+Then there is no need to set up environment for this Exe App. 
+
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -71,17 +86,49 @@ To run exe app, you can simply double-click
 the exe file under directory ```output```
 ![Exe app directory](./images/output.png)
 
+or if you didn't convert .py to .exe, you can simply run:
+```
+python gui.py
+```
+
 Then the GUI will pop up.
 
 <img src="./images/exe_app.png" alt="Exe App GUI" width="50%" height="50%"/>
 
 To use Web App, in the terminal, run:
-```commandline
+```
 python app.py
 ```
 and open http://127.0.0.1:5000/ in your browser, you will see:
 
 <img src="./images/web_app.png" alt="Web App GUI" width="50%" height="50%"/>
+
+To price both European and Barrier Options, please run
+```
+python run.py
+```
+Then change the parameters here:
+```
+# =================================================================================
+# parameters input area
+# =================================================================================
+    # input parameters through keyboard
+    ticker = "AAPL"
+    expiration_date = "January 7, 2022" # January 7, 2022 or 01/07/2022 or 01/07/22
+    # option_class = "barrier"           # european option / barrier option
+    option_class = "european"
+    option_type = "call"                # call or put
+    if option_class == "barrier":
+        barrier_type = "up-out"           # up-in / up-out / down-in/ down-out
+        barrier = 100
+    risk_free_rate = .01
+    volatility = 2
+    drift = .1
+    continuous_yield = 0
+    MC_simulation = 1000
+# =================================================================================
+```
+
 
 <!-- Logic -->
 ### Logic
@@ -89,7 +136,7 @@ and open http://127.0.0.1:5000/ in your browser, you will see:
 **The option you want to price can be found here: https://finance.yahoo.com/.** Input ticker AAPL is
 the same as input ticker AAPL in the search bar of this website. Under the option tag, you can see
 call (in/out of money) and put (in/out of money) European Options with features such as contract
-name, last trade date, strike and so on. The default setting is to price the first option (the 
+name, last trade date, strike and so on. The default setting is to price the **first** option (the 
 option with the smallest contract name)
 
 The following graph shows the screenshot of the current Apple Inc.'s options.
@@ -138,20 +185,24 @@ yield at an annualized rate.
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 <!-- Backend algorithm logic -->
-## Backend Algorithm Logic (IMPORTANT!!!!)
+## Backend Algorithm Logic (IMPORTANT‼️‼️‼️‼️‼️‼️‼ )
 
 <!-- Shortcomings and future improvements -->
 ### Shortcomings and Future Improvements:
 
-- **Assume the Greeks for Barrier Options and European Options are the same. Therefor no further
-unittest with regard to the Greeks of Barrier Options**
+- Calculating Greeks through Monte Carlo Simulation is by definition. 
+  - By definition, delta is the amount an option price is expected to move based on a $1 move up in the underlying given everything else stays
+  the same. As a result, delta = price(s+1, mu, sigma, n, m) - price(s, mu, sigma, n, m)
+  - Gamma is the rate of change in delta based on $1 change in the price of the underlying. Hence,
+  gamma = price(s+2, mu, sigma, n, m) - price(s, mu, sigma, n, m) - 2*delta
+  - Vega is the amount call & put prices will change for every 1% change in implied volatility. As a
+  result, vega = price(s, mu, sigma+.01, n, m) - price(s, mu, sigma, n, m)
 - **The unittest is not necessarily right.** For the lack of confidence, I used my own output as the
-standard to pass all the unittest. I tried the standard library ```option-price```, the results are
+standard to pass all the unittest. (But I've read every entry. It seems great.) I tried the standard library ```option-price```, the results are
 different, but I think mine is right. I also want to try library ```QuantLib``` and ```p4f``` to
 get a second opinion. But due to the unfortunate fact that my M1 Mac has no access to those via
 pip. As a result, after 4 hours of trying to install via wheel, I failed and gave up.
 - **Add unittest logic**: the premium of European option should be larger than that of Barrier Option
-- **Add unittest logic**: check greeks for both European and Barrier option
 
 <!-- Guide on adding more options -->
 ## Guide on adding more options 
@@ -161,27 +212,29 @@ I have left interfaces to add more options in the file ```financial_instruments.
 transaction regulations. 
 
 The interface in the file ```financial_instruments.py```:
-```commandline
+```
 class rainbowOption(baseOption):
     def __init__(self):
         super(baseOption, self).__init__()
-    # def get_vega(self):
-    #     pass
-    # def get_gamma(self):
-    #     pass
-    # def get_delta(self):
-    #     pass
 ```
 
 The interface in the file ```MCPricer.py```:
-```commandline
+```
     elif self.option_class == "rainbow":
         pass
 ```
 
+<!-- Future Application -->
+## Future Application ‼️‼️‼️‼️‼️‼️‼️‼️
+
+- Study option trading strategies, such as Covered Call, Married Put, Bull Call Spread, Bear Put Spread,
+Protective Collar, Long Straddle, Long Strangle, Long Call Butterfly Spread, Iron Condor, and Iron Butterfly
+- create an automated stock and option trading strategies. Combining my current stock trading algorithm along with 
+different option trading strategies such as Protective Collar, Iron Condor and so on.
+
 <!-- Contact -->
 ## Contact
 
-Any ideas you wanna share with me, send me an email: jingzhang6057@gmail.com :D
+Any ideas you wanna share with me, just send me an email: jingzhang6057@gmail.com :D
 
 <p align="right">(<a href="#top">back to top</a>)</p>

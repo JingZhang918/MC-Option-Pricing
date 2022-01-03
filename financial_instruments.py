@@ -6,11 +6,10 @@ class baseOption():
         '''
         :param underlying_price: S
         :param volatility: sigma
-        :param strike_price: X
+        :param strike_price: K
         :param time_to_expiration: T (days)
         :param risk_free_rate: r
         :param continuous_yield: q
-        :param barrier: b (barrier option)
         :param type:  call/put
         '''
         self.S = underlying_price
@@ -21,36 +20,22 @@ class baseOption():
         self.q = continuous_yield
         self.type = type
 
-    def get_d1_d2(self):
-        self.d1 = (np.log(self.S/self.K)+(self.r-self.q+np.power(self.sigma,2)/2)*self.T)/(self.sigma*np.sqrt(self.T))
-        self.d2 = self.d1 - self.sigma*np.sqrt(self.T)
+    def get_BS_price_greeks(self):
 
-    def BSPricer(self):
+        d1 = (np.log(self.S/self.K)+(self.r-self.q+np.power(self.sigma,2)/2)*self.T)/(self.sigma*np.sqrt(self.T))
+        d2 = d1 - self.sigma*np.sqrt(self.T)
+        gamma = np.exp(-self.q*self.T)*stats.norm.pdf(d1)/(self.S*self.sigma*np.sqrt(self.T))
+        vega = np.exp(-self.q*self.T)*self.S*np.sqrt(self.T)*stats.norm.pdf(d1)
 
         if self.type == "call":
-            self.price = self.S*np.exp(-self.q*self.T)*stats.norm.cdf(self.d1) - self.K*np.exp(-self.r*self.T)*stats.norm.cdf(self.d2)
-        elif self.type == "put":
-            self.price = self.K*np.exp(-self.r*self.T)*stats.norm.cdf(-self.d2) - self.S*np.exp(-self.q*self.T)*stats.norm.cdf(-self.d1)
+            price = self.S*np.exp(-self.q*self.T)*stats.norm.cdf(d1) - self.K*np.exp(-self.r*self.T)*stats.norm.cdf(d2)
+            delta = np.exp(-self.q*self.T)*stats.norm.cdf(d1)
         else:
-            raise ValueError("invalid option type, please try 'call' or 'put'. ")
-        return self.price
+            price = self.K*np.exp(-self.r*self.T)*stats.norm.cdf(-d2) - self.S*np.exp(-self.q*self.T)*stats.norm.cdf(-d1)
+            delta = -np.exp(-self.q*self.T)*stats.norm.cdf(-d1)
 
-    def get_delta(self):
-        if self.type == "call":
-            self.Delta = np.exp(-self.q*self.T)*stats.norm.cdf(self.d1)
-        elif self.type == "put":
-            self.Delta = -np.exp(-self.q*self.T)*stats.norm.cdf(-self.d1)
-        else:
-            raise ValueError("invalid option type, please try 'call' or 'put'. ")
-        return self.Delta
+        return [price, delta, gamma, vega]
 
-    def get_gamma(self):
-        self.Gamma = np.exp(-self.q*self.T)*stats.norm.pdf(self.d1)/(self.S*self.sigma*np.sqrt(self.T))
-        return self.Gamma
-
-    def get_vega(self):
-        self.Vega = np.exp(-self.q*self.T)*self.S*np.sqrt(self.T)*stats.norm.pdf(self.d1)
-        return self.Vega
 
     def get_payoff(self, predicted_price):
         if self.type == "call":
@@ -58,11 +43,13 @@ class baseOption():
         else:
             return np.clip(self.K - predicted_price, a_min=0, a_max=np.inf)
 
+
 class europeanOption(baseOption):
 
     def __init__(self, option_class = "european"):
         self.option_class = option_class
         super(baseOption, self).__init__()
+
 
 class barrierOption(baseOption):
 
@@ -76,21 +63,7 @@ class barrierOption(baseOption):
         self.barrier_type = barrier_type
         super(baseOption, self).__init__()
 
-    # def get_delta(self):
-    #     return 1
-    #
-    # def get_vega(self):
-    #     return 1
-    #
-    # def get_gamma(self):
-    #     return 1
 
 class rainbowOption(baseOption):
     def __init__(self):
         super(baseOption, self).__init__()
-    # def get_vega(self):
-    #     pass
-    # def get_gamma(self):
-    #     pass
-    # def get_delta(self):
-    #     pass

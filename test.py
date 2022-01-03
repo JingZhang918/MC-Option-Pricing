@@ -6,133 +6,134 @@ class MyTestCase(unittest.TestCase):
 
     # european option test
     def test_european_option(self):
-        #parameters
-        r = .01
-        S = 30
-        K = 40
-        T = 240 / 365
-        sigma = .3
-        drift = .1
-        N = 100 #simulation steps
 
         optionEU = europeanOption()
-        optionEU.S = S
-        optionEU.sigma = sigma
-        optionEU.K = K
-        optionEU.T = T
-        optionEU.r = r
+        optionEU.sigma = .3
+        optionEU.K = 40
+        optionEU.T = 7/365
+        optionEU.r = .01
         optionEU.q = 0
-        optionEU.get_d1_d2()
-        optionEU.type = "call"
 
-        self.assertAlmostEqual(optionEU.BSPricer(), 0.5132843798399405)
-        self.assertAlmostEqual(optionEU.get_vega(), 5.686707929045142)
-        self.assertAlmostEqual(optionEU.get_gamma(), 0.03203161102008452)
-        self.assertAlmostEqual(optionEU.get_delta(), 0.15058613984880015)
-        self.assertGreater(optionEU.get_delta(), 0)
-        self.assertAlmostEqual(MCPricer(optionEU, drift, N).get_price(), 0.931311142005521)
-
-        optionEU.type = "put"
-        self.assertAlmostEqual(optionEU.BSPricer(), 10.251133491653508)
-        self.assertAlmostEqual(optionEU.get_delta(), -0.8494138601511998)
-        self.assertLess(optionEU.get_delta(), 0)
-        self.assertAlmostEqual(MCPricer(optionEU, drift, N).get_price(), 9.10040511686146)
-
-    # barrier option test
-    def test_barrier_option(self):
-        #parameters
-        r = .01
-        S = 30
-        K = 40
-        T = 240 / 365
-        sigma = .3
         drift = .1
-        N = 100 #simulation steps
+        N = 10 #simulation steps
 
-        #barrier type up-in
-        barrier = 42
-        barrier_type = "up-in"
-        optionBA = barrierOption(barrier, barrier_type)
-        # initialize parameters
-        optionBA.barrier = barrier
-        optionBA.barrier_type = barrier_type
-        optionBA.S = S
-        optionBA.sigma = sigma
-        optionBA.K = K
-        optionBA.T = T
-        optionBA.r = r
+        # MC pricer
+        optionEU.S = 38
+        optionEU.type = "call"
+        [price, delta, gamma, vega] = MCPricer(optionEU, drift, N).get_price_greeks()
+        self.assertAlmostEqual(price, 7.4155541306977835)
+        self.assertTrue(0 <= delta <= 1)
+        self.assertTrue(vega >= 0)
+        optionEU.type = "put"
+        [price, delta, gamma, vega] = MCPricer(optionEU, drift, N).get_price_greeks()
+        self.assertAlmostEqual(price, 4.94932879566411)
+        self.assertTrue(-1 <= delta <= 0)
+        self.assertTrue(vega >= 0)
+
+        optionEU.S = 42
+        optionEU.type = "call"
+        [price, delta, gamma, vega] = MCPricer(optionEU, drift, N).get_price_greeks()
+        self.assertAlmostEqual(price, 10.040123830350968)
+        self.assertTrue(0 <= delta <= 1)
+        self.assertTrue(vega >= 0)
+        optionEU.type = "put"
+        [price, delta, gamma, vega] = MCPricer(optionEU, drift, N).get_price_greeks()
+        self.assertAlmostEqual(price, 3.1045729234458883)
+        self.assertTrue(-1 <= delta <= 0)
+        self.assertTrue(vega >= 0)
+
+        # Black Scholes Model
+        optionEU.S = 38
+        optionEU.type = "call"
+        [price, delta, gamma, vega] = optionEU.get_BS_price_greeks()
+        self.assertAlmostEqual(price, 0.08539668795131128)
+        self.assertTrue(0 <= delta <= 1)
+        self.assertTrue(vega >= 0)
+        optionEU.type = "put"
+        [price, delta, gamma, vega] = optionEU.get_BS_price_greeks()
+        self.assertAlmostEqual(price, 2.077726190625249)
+        self.assertTrue(-1 <= delta <= 0)
+        self.assertTrue(vega >= 0)
+
+        optionEU.S = 42
+        optionEU.type = "call"
+        [price, delta, gamma, vega] = optionEU.get_BS_price_greeks()
+        self.assertAlmostEqual(price, 2.107370356043525)
+        self.assertTrue(0 <= delta <= 1)
+        self.assertTrue(vega >= 0)
+        optionEU.type = "put"
+        [price, delta, gamma, vega] = optionEU.get_BS_price_greeks()
+        self.assertAlmostEqual(price, 0.09969985871746534)
+        self.assertTrue(-1 <= delta <= 0)
+        self.assertTrue(vega >= 0)
+
+
+    # # barrier option test
+    def test_barrier_option(self):
+
+        #parameters
+        optionBA = barrierOption(42, "up-in")
+        optionBA.S = 38
+        optionBA.sigma = .3
+        optionBA.K = 40
+        optionBA.T = 7 / 365
+        optionBA.r = .01
         optionBA.q = 0
         optionBA.type = "call"
-        optionBA.get_d1_d2()
+        # optionBA.get_d1_d2()
 
-        self.assertAlmostEqual(MCPricer(optionBA, drift, N).get_price(), 0.0)
+        drift = .1
+        N = 10 #simulation steps
 
+        [price, delta, gamma, vega] = MCPricer(optionBA, drift, N).get_price_greeks()
+        self.assertAlmostEqual(price, 7.4155541306977835)
+        self.assertTrue(0 <= delta <= 1)
+        self.assertTrue(vega >= 0)
         optionBA.type = "put"
-        self.assertAlmostEqual(MCPricer(optionBA, drift, N).get_price(), 0.0)
+        [price, delta, gamma, vega] = MCPricer(optionBA, drift, N).get_price_greeks()
+        self.assertAlmostEqual(price, 0.6626594883295722)
+        self.assertTrue(-1 <= delta <= 0)
+        self.assertTrue(vega >= 0)
 
+        optionBA.barrier_type = "up-out"
+        optionBA.type = "call" # only profit if st between [40,42]
+        [price, delta, gamma, vega] = MCPricer(optionBA, drift, N).get_price_greeks()
+        self.assertAlmostEqual(price, 0.0)
+        self.assertTrue(0 <= delta <= 1)
+        self.assertTrue(vega >= 0)
+        optionBA.type = "put"
+        [price, delta, gamma, vega] = MCPricer(optionBA, drift, N).get_price_greeks()
+        self.assertAlmostEqual(price, 4.286669307334537)
+        self.assertTrue(-1 <= delta <= 0)
+        self.assertTrue(vega >= 0)
 
-        # barrier type up-out
-        barrier = 42
-        barrier_type = "up-out"
-        optionBA = barrierOption(barrier, barrier_type)
-        # initialize parameters
-        optionBA.barrier = barrier
-        optionBA.barrier_type = barrier_type
-        optionBA.S = S
-        optionBA.sigma = sigma
-        optionBA.K = K
-        optionBA.T = T
-        optionBA.r = r
-        optionBA.q = 0
+        optionBA.S = 42
+        optionBA.barrier = 38
+        optionBA.barrier_type = "down-in"
         optionBA.type = "call"
-        optionBA.get_d1_d2()
-
-        self.assertAlmostEqual(MCPricer(optionBA, drift, N).get_price(), 0.3289026040563393)
-
+        [price, delta, gamma, vega] = MCPricer(optionBA, drift, N).get_price_greeks()
+        self.assertAlmostEqual(price, .0)
+        self.assertTrue(0 <= delta <= 1)
+        self.assertTrue(vega >= 0)
         optionBA.type = "put"
-        self.assertAlmostEqual(MCPricer(optionBA, drift, N).get_price(), 38.22879138380772)
+        [price, delta, gamma, vega] = MCPricer(optionBA, drift, N).get_price_greeks()
+        self.assertAlmostEqual(price, 3.054008493464713)
+        self.assertTrue(-1 <= delta <= 0)
+        self.assertTrue(vega >= 0)
 
-        # barrier type down-in
-        barrier = 38
-        barrier_type = "down-in"
-        optionBA = barrierOption(barrier, barrier_type)
-        # initialize parameters
-        optionBA.barrier = barrier
-        optionBA.barrier_type = barrier_type
-        optionBA.S = S
-        optionBA.sigma = sigma
-        optionBA.K = K
-        optionBA.T = T
-        optionBA.r = r
-        optionBA.q = 0
+        optionBA.barrier_type = "down-out"
         optionBA.type = "call"
-        optionBA.get_d1_d2()
-
-        self.assertAlmostEqual(MCPricer(optionBA, drift, N).get_price(), 0.0)
-
+        [price, delta, gamma, vega] = MCPricer(optionBA, drift, N).get_price_greeks()
+        self.assertAlmostEqual(price, 10.040123830350968)
+        self.assertTrue(0 <= delta <= 1)
+        self.assertTrue(vega >= 0)
         optionBA.type = "put"
-        self.assertAlmostEqual(MCPricer(optionBA, drift, N).get_price(), 39.504540358128786)
+        [price, delta, gamma, vega] = MCPricer(optionBA, drift, N).get_price_greeks()
+        self.assertAlmostEqual(price, 0.050564429981175496)
+        self.assertTrue(-1 <= delta <= 0)
+        self.assertTrue(vega >= 0)
 
-        # barrier type down-out
-        barrier = 38
-        barrier_type = "down-out"
-        optionBA = barrierOption(barrier, barrier_type)
-        # initialize parameters
-        optionBA.barrier = barrier
-        optionBA.barrier_type = barrier_type
-        optionBA.S = S
-        optionBA.sigma = sigma
-        optionBA.K = K
-        optionBA.T = T
-        optionBA.r = r
-        optionBA.q = 0
-        optionBA.type = "call"
-        optionBA.get_d1_d2()
 
-        self.assertAlmostEqual(MCPricer(optionBA, drift, N).get_price(), 0.0)
-
-        optionBA.type = "put"
-        self.assertAlmostEqual(MCPricer(optionBA, drift, N).get_price(), 0.0)
 
 if __name__ == '__main__':
     unittest.main()
